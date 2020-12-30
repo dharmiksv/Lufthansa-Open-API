@@ -1,0 +1,47 @@
+import requests
+
+country_array  = ['IN','DE','FR','SA','AE','CH']
+
+#Get access token
+#Get client_id & client_secret from the following url 'https://developer.lufthansa.com/apps/mykeys'
+#Client_id is the 'Key'
+#client_secret is the 'secret'
+#Key Rate Limits, 5	Calls per second, 1,000	Calls per hour
+
+headers = {
+           'client_id': 'client_id',
+           'client_secret': 'client_secret',
+           'grant_type': 'client_credentials'
+           }
+
+token_response = requests.post("https://api.lufthansa.com/v1/oauth/token",headers).json()
+
+headers = {
+           'User-Agent': 't-app v1.0',
+           'Accept': 'application/json',
+           'Authorization': 'Bearer+' '+str(access_token)'
+           }
+           
+access_token = "your access token"
+
+#Initialize Mongo database   
+#'trips' - database name
+
+from pymongo import MongoClient
+client = MongoClient("mongodb://localhost:27017/trips")
+db=client["trips"]
+
+# import countries
+
+ for country in country_array:
+    url='https://api.lufthansa.com/v1/mds-references/countries/'+str(country)+'?lang=EN&limit=20&offset=0'
+    print(url)
+    response = requests.get(url,headers=headers)
+    print(response)
+    country_json = response.json()
+    print(country_json)
+    # countries - collection name
+    db.countries.insert_one({country:country_json['CountryResource']['Countries']['Country']['Names']['Name']['$']})
+    if i==999:
+        break
+     
